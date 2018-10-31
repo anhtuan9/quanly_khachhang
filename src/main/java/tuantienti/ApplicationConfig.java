@@ -1,8 +1,12 @@
 package tuantienti;
 
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.data.web.config.EnableSpringDataWebSupport;
+import org.springframework.format.FormatterRegistry;
+import tuantienti.formatter.ProvinceFormatter;
 import tuantienti.repository.CustomerRepository;
-import tuantienti.repository.impl.CustomerRepositoryImpl;
 import tuantienti.service.CustomerService;
+import tuantienti.service.ProvinceService;
 import tuantienti.service.impl.CustomerServiceImpl;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -25,6 +29,7 @@ import org.thymeleaf.spring4.SpringTemplateEngine;
 import org.thymeleaf.spring4.templateresolver.SpringResourceTemplateResolver;
 import org.thymeleaf.spring4.view.ThymeleafViewResolver;
 import org.thymeleaf.templatemode.TemplateMode;
+import tuantienti.service.impl.ProvinceServiceImpl;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -34,24 +39,31 @@ import java.util.Properties;
 @Configuration
 @EnableWebMvc
 @EnableTransactionManagement
+@EnableJpaRepositories("tuantienti.repository")
 @ComponentScan("tuantienti")
+@EnableSpringDataWebSupport
 public class ApplicationConfig extends WebMvcConfigurerAdapter implements ApplicationContextAware {
 
     private ApplicationContext applicationContext;
+
+    @Override
+    public void addFormatters(FormatterRegistry registry) {
+        registry.addFormatter(new ProvinceFormatter(applicationContext.getBean(ProvinceService.class)));
+    }
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
     }
 
-    @Bean
-    public CustomerRepository customerRepository(){
-        return new CustomerRepositoryImpl();
-    }
 
     @Bean
     public CustomerService customerService(){
         return new CustomerServiceImpl();
+    }
+    @Bean
+    public ProvinceService provinceService(){
+        return new ProvinceServiceImpl();
     }
 
     @Bean

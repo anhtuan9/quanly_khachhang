@@ -1,22 +1,29 @@
 package tuantienti.controlle;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.web.bind.annotation.*;
 import tuantienti.model.Customer;
+import tuantienti.model.Province;
 import tuantienti.service.CustomerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.servlet.ModelAndView;
-import tuantienti.service.impl.CustomerServiceImpl;
+import tuantienti.service.ProvinceService;
 
-import java.util.List;
+import java.util.Optional;
 
 @Controller
 public class CustomerController {
     @Autowired
     private CustomerService customerService;
+    @Autowired
+    private ProvinceService provinceService;
+
+    @ModelAttribute("provinces")
+    public Iterable<Province> provinces(){
+        return provinceService.findAll();
+    }
     @GetMapping("/create-customer")
     public ModelAndView showCreateForm(){
         ModelAndView modelAndView = new ModelAndView("/customer/create");
@@ -34,8 +41,13 @@ public class CustomerController {
         return modelAndView;
     }
     @GetMapping("/customers")
-    public ModelAndView listCustomers(){
-        List<Customer> customers = customerService.findAll();
+    public ModelAndView listCustomers(@RequestParam("s") Optional<String> s, Pageable pageable){
+        Page<Customer> customers;
+        if(s.isPresent()){
+            customers = customerService.findAllByFirstNameContaining(s.get(), pageable);
+        } else {
+            customers = customerService.findAll(pageable);
+        }
         ModelAndView modelAndView = new ModelAndView("/customer/list");
         modelAndView.addObject("customers", customers);
         return modelAndView;
